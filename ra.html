@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Will You Marry Me?</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&amp;family=Playfair+Display:wght@400;500;600&amp;family=Lora:wght@400;500&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    
+    html, body {
+      height: 100%;
+      width: 100%;
+    }
+    
+    .app-wrapper {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #fff5f7 0%, #fce4ec 50%, #fff0f3 100%);
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+    
+    .font-romantic { font-family: 'Great Vibes', cursive; }
+    .font-elegant { font-family: 'Playfair Display', serif; }
+    .font-body { font-family: 'Lora', serif; }
+    
+    /* Hearts Float - Upward */
+    .heart {
+      position: fixed;
+      font-size: 30px;
+      opacity: 0.3;
+      animation: floatUp 8s linear forwards;
+      pointer-events: none;
+    }
+    
+    @keyframes floatUp {
+      to { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+    }
+
+    /* Flowers Float - Downward */
+    .flower {
+      position: fixed;
+      font-size: 30px;
+      opacity: 0.4;
+      animation: floatDown 10s linear forwards;
+      pointer-events: none;
+    }
+
+    @keyframes floatDown {
+      to { 
+        transform: translateY(100vh) rotate(-360deg);
+        opacity: 0;
+      }
+    }
+    
+    /* Ring Animation */
+    .ring-box { animation: ringPop 2s ease-out forwards; }
+    
+    @keyframes ringPop {
+      0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+      80% { transform: scale(1.1); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    
+    /* Typing */
+    .typing { 
+      overflow: hidden;
+      border-right: 3px solid #e91e63;
+      animation: type 2s steps(40) forwards, blink 0.7s infinite;
+      white-space: nowrap;
+    }
+    
+    @keyframes type { to { width: 100%; } }
+    @keyframes blink { 50% { border-color: transparent; } }
+    
+    /* Card Flip */
+    .flip-card { perspective: 1000px; }
+    .flip-card-inner {
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    
+    .flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
+    
+    .flip-card-front, .flip-card-back {
+      backface-visibility: hidden;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+    
+    .flip-card-front { background: linear-gradient(135deg, #fce4ec 0%, #f8bbd9 100%); }
+    .flip-card-back { background: linear-gradient(135deg, #fff 0%, #fce4ec 100%); transform: rotateY(180deg); }
+    
+    /* Buttons */
+    .btn-yes {
+      background: linear-gradient(135deg, #ec407a 0%, #e91e63 100%);
+      transition: all 0.3s ease;
+    }
+    
+    .btn-yes:hover { transform: scale(1.1); }
+    
+    .btn-no {
+      background: linear-gradient(135deg, #f8bbd9 0%, #f48fb1 100%);
+      transition: all 0.2s ease;
+    }
+    
+    .btn-no:hover { transform: translateX(150px); }
+    
+    /* Confetti */
+    .confetti-piece {
+      position: fixed;
+      pointer-events: none;
+      animation: fall 3s ease-out forwards;
+    }
+    
+    @keyframes fall {
+      to { 
+        transform: translateY(100vh) rotate(720deg);
+        opacity: 0;
+      }
+    }
+    
+    /* Glow */
+    .glow {
+      animation: glowText 2s ease-in-out infinite alternate;
+    }
+    
+    @keyframes glowText {
+      from { text-shadow: 0 0 20px #ff80ab, 0 0 30px #ff4081; }
+      to { text-shadow: 0 0 30px #ff80ab, 0 0 50px #ff4081; }
+    }
+
+    /* Page System */
+    .page {
+      display: none;
+      width: 100%;
+      min-height: 100%;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .page.active {
+      display: flex;
+    }
+
+    /* Fade transition */
+    .page {
+      animation: fadeIn 0.5s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* Letter style */
+    .letter-box {
+      background: linear-gradient(135deg, #fffacd 0%, #fff8dc 100%);
+      border: 3px solid #d4a574;
+      border-radius: 8px;
+      padding: 2rem;
+      max-width: 500px;
+      box-shadow: 0 10px 40px rgba(233, 30, 99, 0.2);
+      position: relative;
+    }
+
+    .letter-box::before {
+      content: '';
+      position: absolute;
+      top: -10px;
+      left: 20%;
+      width: 60%;
+      height: 20px;
+      background: linear-gradient(135deg, #ff69b4 0%, #ff1493 100%);
+      border-radius: 50% 50% 0 0;
+    }
+
+    .letter-box::after {
+      content: '';
+      position: absolute;
+      top: -5px;
+      left: 45%;
+      width: 10px;
+      height: 10px;
+      background: #ffd700;
+      border-radius: 50%;
+    }
+
+    .next-btn {
+      background: linear-gradient(135deg, #ec407a 0%, #e91e63 100%);
+      transition: all 0.3s ease;
+      margin-top: 2rem;
+    }
+
+    .next-btn:hover { transform: scale(1.05); }
+
+    /* Mobile optimized */
+    @media (max-width: 640px) {
+      .flip-card-front svg, .flip-card-back svg {
+        width: 80px;
+        height: 100px;
+      }
+      
+      .story-card {
+        height: 280px !important;
+      }
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div class="app-wrapper" id="app"><!-- Page 1: Proposal -->
+   <div class="page active" id="page-proposal">
+    <div class="text-center mb-12">
+     <h1 class="font-romantic text-6xl sm:text-7xl text-pink-600 glow mb-4">A Special Moment</h1>
+     <p class="font-elegant text-xl text-pink-400">Just for you... 💕</p>
+    </div><!-- Ring Animation -->
+    <div class="relative w-32 h-32 mx-auto mb-12">
+     <svg class="ring-box w-full h-full" viewbox="0 0 100 100"><defs>
+       <lineargradient id="boxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#fff9e6" />
+        <stop offset="100%" style="stop-color:#ffe4cc" />
+       </lineargradient>
+      </defs> <rect x="20" y="35" width="60" height="45" rx="3" fill="url(#boxGrad)" stroke="#d4a88c" stroke-width="2" /> <path d="M 20 35 Q 20 20, 50 15 Q 80 20, 80 35" fill="#ffe4cc" stroke="#d4a88c" stroke-width="2" /> <line x1="20" y1="35" x2="80" y2="35" stroke="#d4a88c" stroke-width="1.5" /> <ellipse cx="50" cy="55" rx="10" ry="8" fill="none" stroke="#ffd700" stroke-width="3" /> <circle cx="50" cy="48" r="5" fill="#ff69b4" /> <ellipse cx="35" cy="42" rx="8" ry="4" fill="#fff" opacity="0.4" />
+     </svg>
+    </div><!-- Proposal Text -->
+    <div id="proposal-box" class="text-center hidden">
+     <h2 id="proposal-text" class="font-romantic text-5xl sm:text-6xl text-pink-600 typing mb-8"></h2><!-- YES/NO Buttons -->
+     <div class="flex flex-col sm:flex-row gap-6 justify-center"><button id="btn-yes" class="btn-yes text-white font-elegant text-xl px-12 py-4 rounded-full"> YES 💍 </button> <button id="btn-no" class="btn-no text-pink-700 font-elegant text-xl px-12 py-4 rounded-full"> NO 💔 </button>
+     </div>
+    </div>
+   </div><!-- Page 2: Love Letter -->
+   <div class="page" id="page-letter">
+    <h1 class="font-romantic text-5xl text-pink-600 mb-8 glow">A Letter For You</h1>
+    <div class="letter-box">
+     <p id="letter-content" class="font-body text-pink-800 text-lg leading-relaxed"></p>
+    </div><button id="btn-next-letter" class="next-btn text-white font-elegant text-lg px-12 py-4 rounded-full"> Next → 💕 </button>
+   </div><!-- Page 3: Love Cards -->
+   <div class="page" id="page-cards">
+    <h1 class="font-romantic text-5xl text-pink-600 mb-8 glow">Our Love Story</h1>
+    <div class="grid grid-cols-1 gap-6 w-full max-w-sm mb-8"><!-- Card 1 -->
+     <div class="flip-card story-card h-64 cursor-pointer" data-msg="People always ask 'why' they love someone, and they list out reasons. But with you, I've realized that I love you, but I don't even know why I love you. And that's the most beautiful part. It's not because of one thing you do or one thing you say—it's just you. It's a feeling in my soul that I can't put into words. It's an unexplainable pull that tells me you are my person. I don't love you for a reason, I love you because my heart simply doesn't know how to do anything else. You are just a part of me now, as natural as breathing.">
+      <div class="flip-card-inner w-full h-full">
+       <div class="flip-card-front flex flex-col items-center justify-center p-6 rounded-2xl shadow-lg">
+        <svg width="120" height="140" viewbox="0 0 120 140" class="mb-3"><defs>
+          <lineargradient id="skin1" x1="0%" y1="0%" x2="100%" y2="100%">
+           <stop offset="0%" style="stop-color:#f4a460" />
+           <stop offset="100%" style="stop-color:#d2691e" />
+          </lineargradient>
+         </defs> <!-- Male head --> <circle cx="35" cy="20" r="12" fill="url(#skin1)" /> <!-- Female head --> <circle cx="85" cy="18" r="11" fill="#f4a460" /> <!-- Male body --> <rect x="28" y="35" width="14" height="35" rx="3" fill="#e91e63" opacity="0.8" /> <!-- Female body --> <rect x="78" y="30" width="14" height="40" rx="3" fill="#ff69b4" opacity="0.8" /> <!-- Male arms --> <rect x="18" y="40" width="10" height="28" rx="5" fill="url(#skin1)" transform="rotate(-25 23 40)" /> <rect x="42" y="40" width="10" height="28" rx="5" fill="url(#skin1)" transform="rotate(25 47 40)" /> <!-- Female arms --> <rect x="68" y="35" width="10" height="30" rx="5" fill="#f4a460" transform="rotate(-20 73 35)" /> <rect x="92" y="35" width="10" height="30" rx="5" fill="#f4a460" transform="rotate(20 97 35)" /> <!-- Hands together --> <circle cx="60" cy="58" r="6" fill="url(#skin1)" /> <!-- Heart between them --> <path d="M 60 65 C 56 62, 52 62, 52 66 C 52 70, 60 76, 60 76 C 60 76, 68 70, 68 66 C 68 62, 64 62, 60 65 Z" fill="#ff1493" /> <!-- Legs --> <rect x="32" y="72" width="6" height="35" fill="url(#skin1)" /> <rect x="82" y="72" width="6" height="35" fill="#f4a460" />
+        </svg>
+        <h3 class="font-romantic text-xl text-pink-600">Why I Love You</h3>
+        <p class="font-body text-xs text-pink-400 mt-1">Click to reveal</p>
+       </div>
+       <div class="flip-card-back flex items-center justify-center p-6 rounded-2xl shadow-lg">
+        <p class="font-body text-pink-700 text-center text-sm leading-relaxed card-msg"></p>
+       </div>
+      </div>
+     </div><!-- Card 2 -->
+     <div class="flip-card story-card h-64 cursor-pointer" data-msg="So, here is my promise to you, and I want you to hold me to it. I promise that no matter how hard things get, I am not going anywhere. I promise to fight for 'us' even when things aren't perfect. I won't be another person who walks away when the road gets blurry. I promise to be your rock when you feel unstable, your silence when the world is too loud, and your home when you feel lost. I am giving you my loyalty, my honesty, and my heart, not just for today, but for every single day that follows. I am here to stay, Betuu. Through the thick and thin, through the tears and the laughter—I am yours.">
+      <div class="flip-card-inner w-full h-full">
+       <div class="flip-card-front flex flex-col items-center justify-center p-6 rounded-2xl shadow-lg bg-gradient-to-br from-purple-200 to-pink-100">
+        <svg width="120" height="140" viewbox="0 0 120 140" class="mb-3"><defs>
+          <lineargradient id="skin2" x1="0%" y1="0%" x2="100%" y2="100%">
+           <stop offset="0%" style="stop-color:#d4a574" />
+           <stop offset="100%" style="stop-color:#b8956a" />
+          </lineargradient>
+         </defs> <!-- Male head --> <circle cx="30" cy="22" r="12" fill="url(#skin2)" /> <!-- Female head --> <circle cx="90" cy="20" r="11" fill="#d4a574" /> <!-- Male shirt --> <rect x="23" y="37" width="14" height="40" rx="3" fill="#4a90e2" opacity="0.8" /> <!-- Female dress --> <rect x="83" y="33" width="14" height="43" rx="3" fill="#ff69b4" opacity="0.8" /> <!-- Hands holding --> <rect x="37" y="52" width="46" height="8" rx="4" fill="url(#skin2)" opacity="0.7" /> <!-- Male arms --> <rect x="16" y="42" width="7" height="32" rx="3.5" fill="url(#skin2)" transform="rotate(-30 19.5 42)" /> <rect x="37" y="42" width="7" height="32" rx="3.5" fill="url(#skin2)" transform="rotate(20 40.5 42)" /> <!-- Female arms --> <rect x="76" y="40" width="7" height="32" rx="3.5" fill="#d4a574" transform="rotate(-20 79.5 40)" /> <rect x="97" y="42" width="7" height="32" rx="3.5" fill="#d4a574" transform="rotate(30 100.5 42)" /> <!-- Legs --> <rect x="26" y="78" width="6" height="35" fill="url(#skin2)" /> <rect x="88" y="78" width="6" height="35" fill="#d4a574" />
+        </svg>
+        <h3 class="font-romantic text-xl text-pink-600">My Promise</h3>
+        <p class="font-body text-xs text-pink-400 mt-1">Click to reveal</p>
+       </div>
+       <div class="flip-card-back flex items-center justify-center p-6 rounded-2xl shadow-lg">
+        <p class="font-body text-pink-700 text-center text-sm leading-relaxed card-msg"></p>
+       </div>
+      </div>
+     </div><!-- Card 3 -->
+     <div class="flip-card story-card h-64 cursor-pointer" data-msg="I'll be honest with you: the thought of losing you is my biggest fear. In a world where everything is temporary, I'm terrified of the idea of you not being there. I've seen enough 'goodbyes' in my life to know how much they hurt, and that's why I hold onto us so tightly. My fear doesn't come from a place of weakness, but from knowing exactly how much value you add to my soul. I don't just want you in my life; I need you in it.">
+      <div class="flip-card-inner w-full h-full">
+       <div class="flip-card-front flex flex-col items-center justify-center p-6 rounded-2xl shadow-lg bg-gradient-to-br from-yellow-100 to-pink-100">
+        <svg width="120" height="140" viewbox="0 0 120 140" class="mb-3"><defs>
+          <lineargradient id="skin3" x1="0%" y1="0%" x2="100%" y2="100%">
+           <stop offset="0%" style="stop-color:#e8c4a8" />
+           <stop offset="100%" style="stop-color:#d4a88c" />
+          </lineargradient>
+         </defs> <!-- House --> <rect x="20" y="90" width="80" height="45" fill="#a0522d" opacity="0.3" /> <polygon points="20,90 60,70 100,90" fill="#8b4513" opacity="0.3" /> <!-- Door --> <rect x="55" y="110" width="10" height="25" fill="#654321" opacity="0.5" /> <!-- Male head --> <circle cx="32" cy="20" r="11" fill="url(#skin3)" /> <!-- Female head --> <circle cx="88" cy="18" r="10" fill="#e8c4a8" /> <!-- Male body --> <rect x="26" y="33" width="12" height="32" rx="2" fill="#4a90e2" opacity="0.8" /> <!-- Female body --> <rect x="84" y="30" width="12" height="35" rx="2" fill="#ff69b4" opacity="0.8" /> <!-- Arms around each other --> <ellipse cx="60" cy="50" rx="28" ry="6" fill="url(#skin3)" opacity="0.6" /> <!-- Legs --> <rect x="29" y="66" width="5" height="30" fill="url(#skin3)" /> <rect x="86" y="66" width="5" height="30" fill="#e8c4a8" />
+        </svg>
+        <h3 class="font-romantic text-xl text-pink-600">The Fear In My Heart</h3>
+        <p class="font-body text-xs text-pink-400 mt-1">Click to reveal</p>
+       </div>
+       <div class="flip-card-back flex items-center justify-center p-6 rounded-2xl shadow-lg">
+        <p class="font-body text-pink-700 text-center text-sm leading-relaxed card-msg"></p>
+       </div>
+      </div>
+     </div><!-- Card 4 -->
+     <div class="flip-card story-card h-64 cursor-pointer" data-msg="I don't want a temporary spark; I want a lifetime of 'us.' I want to look back years from now and be able to say that we made it through everything because we never gave up on each other. You are my final destination. So, will you trust me with your heart, just as I've trusted you with mine? Will you be my forever? 💍✨">
+      <div class="flip-card-inner w-full h-full">
+       <div class="flip-card-front flex flex-col items-center justify-center p-6 rounded-2xl shadow-lg bg-gradient-to-br from-rose-100 to-pink-100">
+        <svg width="120" height="140" viewbox="0 0 120 140" class="mb-3"><defs>
+          <lineargradient id="skin4" x1="0%" y1="0%" x2="100%" y2="100%">
+           <stop offset="0%" style="stop-color:#f4a460" />
+           <stop offset="100%" style="stop-color:#cd853f" />
+          </lineargradient>
+         </defs> <!-- Male head --> <circle cx="35" cy="18" r="11" fill="url(#skin4)" /> <!-- Female head --> <circle cx="85" cy="16" r="10" fill="#f4a460" /> <!-- Heads close together --> <circle cx="35" cy="18" r="11" fill="url(#skin4)" opacity="0.3" /> <!-- Male body --> <rect x="29" y="31" width="12" height="38" rx="2" fill="#e91e63" opacity="0.8" /> <!-- Female body --> <rect x="81" y="28" width="12" height="40" rx="2" fill="#ff69b4" opacity="0.8" /> <!-- Arms around each other --> <rect x="41" y="45" width="38" height="7" rx="3.5" fill="url(#skin4)" opacity="0.7" /> <!-- Ring on finger --> <circle cx="32" cy="68" r="2.5" fill="#ffd700" stroke="#daa520" stroke-width="0.5" /> <circle cx="88" cy="68" r="2.5" fill="#ffd700" stroke="#daa520" stroke-width="0.5" /> <!-- Heart --> <path d="M 60 42 C 56 39, 52 39, 52 43 C 52 47, 60 53, 60 53 C 60 53, 68 47, 68 43 C 68 39, 64 39, 60 42 Z" fill="#ff1493" /> <!-- Legs --> <rect x="32" y="70" width="5" height="32" fill="url(#skin4)" /> <rect x="83" y="70" width="5" height="32" fill="#f4a460" />
+        </svg>
+        <h3 class="font-romantic text-xl text-pink-600">Forever</h3>
+        <p class="font-body text-xs text-pink-400 mt-1">Click to reveal</p>
+       </div>
+       <div class="flip-card-back flex items-center justify-center p-6 rounded-2xl shadow-lg">
+        <p class="font-body text-pink-700 text-center text-sm leading-relaxed card-msg"></p>
+       </div>
+      </div>
+     </div>
+    </div>
+    <div id="cards-locked" class="text-center text-pink-500 font-elegant mb-4">
+     Flip all 4 cards to continue... 💕
+    </div><button id="btn-next-cards" class="next-btn text-white font-elegant text-lg px-12 py-4 rounded-full hidden"> Next → 💕 </button>
+   </div><!-- Page 4: Final Message -->
+   <div class="page" id="page-final">
+    <div class="text-center">
+     <div class="text-8xl mb-6 animate-bounce">
+      💕
+     </div>
+     <h1 id="final-text" class="font-romantic text-6xl sm:text-7xl text-pink-600 glow mb-6"></h1>
+     <div class="flex justify-center gap-4 text-5xl"><span class="animate-bounce">💖</span> <span class="animate-bounce" style="animation-delay: 0.2s;">💗</span> <span class="animate-bounce" style="animation-delay: 0.4s;">💓</span>
+     </div>
+     <p class="font-elegant text-2xl text-pink-500 mt-8">Forever &amp; Always ❤️</p>
+    </div>
+   </div><!-- Confetti Container -->
+   <div id="confetti"></div>
+  </div>
+  <script>
+    const defaultConfig = {
+      proposal_text: "Will you be my future wife?",
+      letter_text: "I was looking back at everything we've shared, and it hit me how much you've truly become my world. You aren't just someone I talk to every day; you are the peace I look for at the end of a long day. Looking at our journey together, I realize that every conversation we've had has only made me realize one thing—I never want to let you go. You have this incredible way of making everything better just by being yourself. Your presence in my life has given me a kind of happiness I didn't even know existed. I don't need a special occasion to tell you this, but I want to make it official in my heart every single day. I don't care about the rest of the world as long as I have you by my side. I want to build a future with you, filled with more laughter, more memories, and infinite love. So, Betuu... will you stay by my side and keep being the most beautiful part of my life? Will you let me love you more and more with every passing day? 💍✨",
+      final_text: "I love you Betuuu"
+    };
+    
+    let config = { ...defaultConfig };
+    
+    // Float hearts upward
+    function floatHeart() {
+      const hearts = ['💕', '💗', '💖', '💓', '💞', '❤️'];
+      const heart = document.createElement('div');
+      heart.className = 'heart';
+      heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+      heart.style.left = Math.random() * 100 + '%';
+      heart.style.top = '100%';
+      heart.style.animationDuration = (Math.random() * 5 + 5) + 's';
+      heart.style.animationDelay = Math.random() * 2 + 's';
+      document.body.appendChild(heart);
+      
+      setTimeout(() => heart.remove(), 10000);
+    }
+
+    // Float flowers downward
+    function floatFlower() {
+      const flowers = ['🌹', '🌸', '🌺', '🌻', '🌷', '💐'];
+      const flower = document.createElement('div');
+      flower.className = 'flower';
+      flower.textContent = flowers[Math.floor(Math.random() * flowers.length)];
+      flower.style.left = Math.random() * 100 + '%';
+      flower.style.top = '-50px';
+      flower.style.animationDuration = (Math.random() * 8 + 8) + 's';
+      flower.style.animationDelay = Math.random() * 2 + 's';
+      document.body.appendChild(flower);
+      
+      setTimeout(() => flower.remove(), 12000);
+    }
+    
+    setInterval(floatHeart, 300);
+    setInterval(floatFlower, 400);
+    
+    // Typing effect
+    function typeText(elem, text, speed = 80) {
+      let i = 0;
+      elem.textContent = '';
+      return new Promise(resolve => {
+        const type = () => {
+          if (i < text.length) {
+            elem.textContent += text[i++];
+            setTimeout(type, speed);
+          } else {
+            resolve();
+          }
+        };
+        type();
+      });
+    }
+
+    // Switch pages
+    function switchPage(fromId, toId) {
+      document.getElementById(fromId).classList.remove('active');
+      document.getElementById(toId).classList.add('active');
+    }
+    
+    // Show proposal
+    setTimeout(() => {
+      const box = document.getElementById('proposal-box');
+      box.classList.remove('hidden');
+      typeText(document.getElementById('proposal-text'), config.proposal_text);
+    }, 2500);
+    
+    // YES click
+    document.getElementById('btn-yes').addEventListener('click', () => {
+      // Confetti
+      for (let i = 0; i < 100; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.left = Math.random() * 100 + '%';
+        piece.style.top = '-10px';
+        const colors = ['#ff69b4', '#ff1493', '#ffc0cb', '#ffd700', '#ff6b6b'];
+        piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.width = '10px';
+        piece.style.height = '10px';
+        piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+        document.getElementById('confetti').appendChild(piece);
+        
+        setTimeout(() => piece.remove(), 3500);
+      }
+      
+      // Go to letter page
+      setTimeout(() => {
+        switchPage('page-proposal', 'page-letter');
+        typeText(document.getElementById('letter-content'), config.letter_text, 50);
+      }, 500);
+    });
+    
+    // NO click - escape
+    let noCount = 0;
+    document.getElementById('btn-no').addEventListener('click', (e) => {
+      noCount++;
+      if (noCount < 3) {
+        e.target.style.transform = `translate(${(Math.random() - 0.5) * 300}px, ${(Math.random() - 0.5) * 200}px)`;
+      } else {
+        alert('Haan kar de please! 🥺❤️');
+        noCount = 0;
+      }
+    });
+
+    // Letter Next button
+    document.getElementById('btn-next-letter').addEventListener('click', () => {
+      switchPage('page-letter', 'page-cards');
+    });
+    
+    // Card flips
+    let flipped = 0;
+    document.querySelectorAll('.story-card').forEach((card) => {
+      card.addEventListener('click', () => {
+        card.classList.toggle('flipped');
+        
+        if (card.classList.contains('flipped')) {
+          const msg = card.getAttribute('data-msg');
+          card.querySelector('.card-msg').textContent = msg;
+          flipped++;
+          
+          if (flipped === 4) {
+            document.getElementById('cards-locked').classList.add('hidden');
+            document.getElementById('btn-next-cards').classList.remove('hidden');
+          }
+        } else {
+          flipped--;
+          if (flipped < 4) {
+            document.getElementById('cards-locked').classList.remove('hidden');
+            document.getElementById('btn-next-cards').classList.add('hidden');
+          }
+        }
+      });
+    });
+
+    // Cards Next button
+    document.getElementById('btn-next-cards').addEventListener('click', () => {
+      switchPage('page-cards', 'page-final');
+      typeText(document.getElementById('final-text'), config.final_text + ' ❤️', 100);
+    });
+    
+    // Element SDK
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange: (cfg) => {
+          config = { ...defaultConfig, ...cfg };
+        },
+        mapToCapabilities: () => ({
+          recolorables: [],
+          borderables: [],
+          fontEditable: undefined,
+          fontSizeable: undefined
+        }),
+        mapToEditPanelValues: (cfg) => new Map([
+          ["proposal_text", cfg.proposal_text],
+          ["letter_text", cfg.letter_text],
+          ["final_text", cfg.final_text]
+        ])
+      });
+    }
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ca4b5ae843f855b',t:'MTc3MDQ4NjQxOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
